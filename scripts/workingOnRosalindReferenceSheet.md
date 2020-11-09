@@ -1,6 +1,6 @@
 Working with the command line and computation cluster
 ============================================
-Utility sheet version 2 (20201109)
+Reference sheet version 2 (20201109)
 
 Johan Zvrskovec 2020
 
