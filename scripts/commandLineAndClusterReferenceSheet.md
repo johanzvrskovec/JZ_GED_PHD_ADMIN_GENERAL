@@ -24,10 +24,11 @@ Scratch - for data files and other larger files:
 
 ## General commands
     
-    cd      #change directory
-    pwd     #show current directory path
-    ls      #list directory content
-    cat     #print content of file
+    cd                  #change directory
+    pwd                 #show current directory path
+    ls                  #list directory content
+    cat                 #print content of file
+    myvar='somevalue'   #variable assignment
 
 ## Multiple commands
 Execute each command regardless of the success of the previous:
