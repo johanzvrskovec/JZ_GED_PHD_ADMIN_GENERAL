@@ -5,13 +5,11 @@ Reference sheet version 2 (20201109)
 Johan Zvrskovec 2020
 
 # Connect to Roslind: remote access with ssh
-Connecting with your user (use your k-username), using a specified private keyfile (identity file)
+Connecting with your user (use your k-username), using a specified private keyfile (identity file) (1) or when you have set up your keys in ~/.ssh/config (2)
     
-    ssh -i ~/rosalind.rsa kXXXXXXXX@login.rosalind.kcl.ac.uk
-
-Connecting with your user, when you have set up your keys in ~/.ssh/config
+    ssh -i ~/rosalind.rsa kXXXXXXXX@login.rosalind.kcl.ac.uk    #1
     
-    ssh kXXXXXXXX@login.rosalind.kcl.ac.uk
+    ssh kXXXXXXXX@login.rosalind.kcl.ac.uk                      #2
 
 # File areas on Rosalind
 Personal - for scripts, logs, and programs:
@@ -26,21 +24,17 @@ Scratch - for data files and other larger files:
 
 ## General commands
     
-    cd - change directory
-    pwd - show current directory path
-    ls - list directory content
-    cat - print content of file
+    cd      #change directory
+    pwd     #show current directory path
+    ls      #list directory content
+    cat     #print content of file
 
 ## Multiple commands
 Execute each command regardless of the success of the previous:
     
     pwd; cat myfile.md; ls;
-
-
-This will also work:
     
     pwd || cat myfile.md || ls
-
 
 Execute each command, but halt at any error:
     
@@ -99,14 +93,37 @@ Run R interactively
 Execute an R-script
     
     Rscript myproject/myprojectCode.R
+    
+## Transferring files between machines
+
+Copy file from local machine to remote (rosalind)
+    
+    rsync -avzh --progress /Users/jakz/myfile.txt login.rosalind.kcl.ac.uk:/users/k19049801/myfile.txt
+
+the whole content of a folder (not including the folder) - remove trailing slash to copy the whole folder
+
+    rsync -avzh --progress /Users/jakz/myfolder/ login.rosalind.kcl.ac.uk:/users/k19049801/
 
 
-# Add modules on Rosalind
+## Finding stuff
+
+Find any file in real time prefixed 'setup' in any subfolder to the specified folder (current folder is the default)
+
+    find project/MYPROJECT/ -name setup*    #case sensitive
+    find project/MYPROJECT/ -iname setup*   #case insensitive
+
+
+# Modules (on Rosalind)
+
+List available modules
+
+    module avail
+
 Add the R-module:
     
     module add apps/R/3.6.0
 
-# Scheduled jobs
+# Scheduled jobs with the Slurm scheduler
 When you log in to Rosalind you start off on a login node. Use other nodes for work.
 
 Start an interactive node
@@ -130,11 +147,37 @@ List user's Slurm job on Rosalind
     
     squeue -u kXXXXXXXX
 
-Cancel Slurm job
+Cancel Slurm job (includes your interactive node)
     
     scancel [JOBID]
 
 
+# Data formatting
+
+Format text output in ordered columns as a table
+
+    column -t
+    cat myfile.has.columns | column -t     #example
 
 
+# Rosalind custom tool for monitoring disk usage
 
+Load the module and use the tool
+
+    module load utilities/rosalind-fs-quota
+    ros-fs-quota
+
+# Version control and project folder structure with Git
+  
+Clone your repository from GitHub or other remote repository into current folder (will create a folder for the cloned project)
+  
+    git clone https://github.kcl.ac.uk/kXXXXXXXX/myprojectongithub.git
+    
+Initiate new repository without remote in the current folder (1) or in the specified folder (2)
+
+    git init
+    git init mynewproject
+    
+Initiate new bare repository - convenient to use as a remote repository. Is conventionally appended with the suffix .git (compare with GitHub for example)
+
+    git init --bare mynewproject.git
