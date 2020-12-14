@@ -40,6 +40,10 @@ Execute each command regardless of the success of the previous:
 Execute each command, but halt at any error:
     
     pwd && cat myfile.md && ls
+    
+Loop through different values accessed with a variable
+    
+    for v in a b c d; do echo $v; done
 
 ## Redirect std screen output to a file (overwrite)
     
@@ -99,11 +103,17 @@ Execute an R-script
 
 Copy file from local machine to remote (rosalind)
     
-    rsync -avzh --progress /Users/jakz/myfile.txt login.rosalind.kcl.ac.uk:/users/k19049801/myfile.txt
+    rsync -avzh --progress /Users/myname/myfile.txt login.rosalind.kcl.ac.uk:/users/kXXXXXXXX/myfile.txt
+    
+multiple files from remote to local machine (current folder)
 
-the whole content of a folder (not including the folder) - remove trailing slash to copy the whole folder
+    rsync -avzh --progress 'login.rosalind.kcl.ac.uk:/users/kXXXXXXXX/myfile.txt /users/kXXXXXXXX/myfile2.txt' ./
 
-    rsync -avzh --progress /Users/jakz/myfolder/ login.rosalind.kcl.ac.uk:/users/k19049801/
+the whole content of a folder (not including the folder) - remove source trailing slash to copy the whole folder
+
+    rsync -avzh --progress /Users/myname/myfolder/ login.rosalind.kcl.ac.uk:/users/kXXXXXXXX/
+    
+
 
 
 ## Finding stuff
@@ -136,9 +146,9 @@ Exit your interactive node
     exit
 
 Submit a command to the Slurm job scheduler
-Example - Uses the shared partition, settings for a number of tasks, cpu's, memory, and job outpt files:
+Example - Uses whichever of the brc partition (more resources than the shared) and the shared, settings for a number of tasks, cpu's, memory, and job outpt files:
     
-    sbatch --time 00:59:00 --partition shared --job-name="MY_JOB" --ntasks 1 --cpus-per-task 4 --mem-per-cpu 6G --wrap="module add apps/R/3.6.0 && Rscript myprojectCode.R" --output "myprojectCode.out" --error "myprojectCode.err" &
+    sbatch --time 00:59:00 --partition brc,shared --job-name="MY_JOB" --ntasks 1 --cpus-per-task 4 --mem-per-cpu 6G --wrap="module add apps/R/3.6.0 && Rscript myprojectCode.R" --output "myprojectCode.out" --error "myprojectCode.err"
 
 List all Slurm jobs on Rosalind
     
