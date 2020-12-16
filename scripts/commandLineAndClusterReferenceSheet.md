@@ -11,6 +11,9 @@ Connecting with your user (use your k-username), using a specified private keyfi
     
     ssh kXXXXXXXX@login.rosalind.kcl.ac.uk                      #2
 
+Rosalind support forum at: https://forum.rosalind.kcl.ac.uk/
+(because I always have trouble finding this)
+
 # File areas on Rosalind
 Personal - for scripts, logs, and programs:
     
@@ -44,12 +47,16 @@ Execute each command, but halt at any error:
 Loop through different values accessed with a variable
     
     for v in a b c d; do echo $v; done
+    
+Advanced iteration from the command line with awk (and pipe)
 
-## Redirect std screen output to a file (overwrite)
+    echo $PATH | awk 'BEGIN{RS=":"} {NR": "$0}'
+
+## Redirect all screen output to a file (overwrite)
     
     ls > myOutput.txt
 
-## Redirect std screen output to a file (append)
+## Redirect all screen output to a file (append)
     
     ls >> myOutput.txt
 
@@ -84,6 +91,13 @@ Kill job in background:
 Create symlink (soft link):
     
     ln -s /scratch/users/kXXXXXXXX/project/ project
+    
+## File permissions
+
+Set(+,-,=) file permissions (r - read, w - write, x - execute) recursively (-R) on specified directory
+for (a - all, u - user, g - group, o - other)
+
+    chmod -R a+rw cadir
 
 ## Running scripts and programs
 
@@ -99,7 +113,7 @@ Execute an R-script
     
     Rscript myproject/myprojectCode.R
     
-## Transferring files between machines
+## Transferring files between machines, and downloading from remote locations
 
 Copy file from local machine to remote (rosalind)
     
@@ -113,15 +127,22 @@ the whole content of a folder (not including the folder) - remove source trailin
 
     rsync -avzh --progress /Users/myname/myfolder/ login.rosalind.kcl.ac.uk:/users/kXXXXXXXX/
     
+Downloading file over shaky connections (resumes where it left of if interrupted, makes two tries), specifying the target file (remove the last argument to keep original name)
 
-
+    wget -c -t 2 http://remote.location/sub/libgit2-devel-0.26.6-1.el7.x86_64.rpm --no-check-certificate -O NEWFILENAME.file
+    
 
 ## Finding stuff
 
 Find any file in real time prefixed 'setup' in any subfolder to the specified folder (current folder is the default)
 
+
     find project/MYPROJECT/ -name setup*    #case sensitive
     find project/MYPROJECT/ -iname setup*   #case insensitive
+    
+Last - find some really important file on the server in the background (&), do not show the error messages (2>&- alternate 2>/dev/null), save the (std)output to a file, do not use unnecessary resources (nice).
+    
+    nice find / -name libgit2.pc 1>paths_libgit2.txt 2>&- &
 
 
 # Modules (on Rosalind)
@@ -139,7 +160,7 @@ When you log in to Rosalind you start off on a login node. Use other nodes for w
 
 Start an interactive node
     
-    srun -p shared --pty /bin/bash
+    srun -p brc,shared --pty /bin/bash
 
 Exit your interactive node
     
@@ -192,3 +213,4 @@ Initiate new repository without remote in the current folder (1) or in the speci
 Initiate new bare repository - convenient to use as a remote repository. Is conventionally appended with the suffix .git (compare with GitHub for example)
 
     git init --bare mynewproject.git
+    
