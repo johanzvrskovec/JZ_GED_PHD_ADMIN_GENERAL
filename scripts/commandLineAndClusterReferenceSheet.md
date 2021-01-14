@@ -200,17 +200,32 @@ Load the module and use the tool
     ros-fs-quota
 
 # Version control and project folder structure with Git
-  
+
+For contributing to an existing GitHub project, see: https://www.dataschool.io/how-to-contribute-on-github/
+
+Common git commands
+
+    git status        #get information on the modification state of the files of the current branch
+    git branch        #manage local branches, use -v for verbose info
+    git remote        #manage remote branches, use -v for verbose info
+    git checkout      #switch branch, affecting local files, or create new branch immediately and switching to it with -b
+
 Clone your repository from GitHub or other remote repository into current folder (will create a folder for the cloned project)
   
     git clone https://github.kcl.ac.uk/kXXXXXXXX/myprojectongithub.git
+
+Manage remote branches for push and pull, adding origin and an upstream remote branch 
+
+    git remote add origin URL_OF_FORK
+    git remote add upstream URL_OF_PROJECT
     
-Initiate new repository without remote in the current folder (1) or in the specified folder (2)
+Initiate new repository without remote in the current folder (1) or in the specified folder (2). For naming see: https://stackoverflow.com/questions/11947587/is-there-a-naming-convention-for-git-repositories
+=> use lower case and hyphens rather than camel case or underscores.
 
     git init
-    git init mynewproject
+    git init my-new-rlang-project
     
 Initiate new bare repository - convenient to use as a remote repository. Is conventionally appended with the suffix .git (compare with GitHub for example)
 
-    git init --bare mynewproject.git
+    git init --bare my-new-rlang-project.git
     
