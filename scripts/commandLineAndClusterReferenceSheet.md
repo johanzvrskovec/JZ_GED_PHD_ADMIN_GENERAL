@@ -32,8 +32,15 @@ Scratch - for data files and other larger files:
     ls                  #list directory content
     cat                 #print content of file
     myvar='somevalue'   #variable assignment
+    date +%Y%m%d%H%M%S  #get a formatted date as YYYYMMDDHHMMSS
 
 ## Multiple commands
+
+Execute commands inline as part of string concatenation
+    
+    echo "My program output: $(pwd)$(date +%Y%m%d)"
+    echo "My program output:" "$(pwd)" "$(date +%Y%m%d)"
+
 Execute each command regardless of the success of the previous:
     
     pwd; cat myfile.md; ls;
