@@ -1,8 +1,8 @@
 Working with the command line and computation cluster
 ============================================
-Reference sheet version 2 (20201109)
+Reference sheet version 3 (20210121)
 
-Johan Zvrskovec 2020
+Johan Zvrskovec 2021
 
 # Connect to Roslind: remote access with ssh
 Connecting with your user (use your k-username), using a specified private keyfile (identity file) (1) or when you have set up your keys in ~/.ssh/config (2)
@@ -102,9 +102,13 @@ Create symlink (soft link):
 ## File permissions
 
 Set(+,-,=) file permissions (r - read, w - write, x - execute) recursively (-R) on specified directory
-for (a - all, u - user, g - group, o - other)
+for (a - all, u - user, g - group, o - other).
 
     chmod -R a+rw cadir
+    
+Set file owner of individual:group as (use -R for recursive actions). Beware of the behavior regarding symbolic links.
+
+    chown postgres:postgres myfile.conf
 
 ## Running scripts and programs
 
@@ -174,9 +178,9 @@ Exit your interactive node
     exit
 
 Submit a command to the Slurm job scheduler
-Example - Uses whichever of the brc partition (more resources than the shared) and the shared, settings for a number of tasks, cpu's, memory, and job outpt files:
+Example - Uses whichever of the brc partition (more resources than the shared) and the shared, settings for a number of tasks, cpu's, memory, and job outpt files, and names output with the current date:
     
-    sbatch --time 00:59:00 --partition brc,shared --job-name="MY_JOB" --ntasks 1 --cpus-per-task 4 --mem-per-cpu 6G --wrap="module add apps/R/3.6.0 && Rscript myprojectCode.R" --output "myprojectCode.out" --error "myprojectCode.err"
+    sbatch --time 00:59:00 --partition brc,shared --job-name="MY_JOB" --ntasks 1 --cpus-per-task 4 --mem-per-cpu 6G --wrap="module add apps/R/3.6.0 && Rscript myprojectCode.R" --output "myprojectCode$(date +%Y%m%d).out.txt" --error "myprojectCode$(date +%Y%m%d).err.txt"
 
 List all Slurm jobs on Rosalind
     
@@ -216,6 +220,11 @@ Common git commands
     git branch        #manage local branches, use -v for verbose info
     git remote        #manage remote branches, use -v for verbose info
     git checkout      #switch branch, affecting local files, or create new branch immediately and switching to it with -b
+    git log           #view commit history, git log --graph --oneline --all for a more graphical representation (compact and showing all branches)
+
+Revert local working copy changes to HEAD content
+
+    git checkout .
 
 Clone your repository from GitHub or other remote repository into current folder (will create a folder for the cloned project)
   
@@ -235,4 +244,26 @@ Initiate new repository without remote in the current folder (1) or in the speci
 Initiate new bare repository - convenient to use as a remote repository. Is conventionally appended with the suffix .git (compare with GitHub for example)
 
     git init --bare my-new-rlang-project.git
+    
+# Vim
+
+Check out online summary sheets and tutorials such as https://vimsheet.com/
+    
+Essentials
+
+    :q          #quit Vim
+    :w          #save file
+    :wq         #save and quit
+    y           # 'yank' - copy text within Vim
+    c           # 'change (or maybe cut)' - cut text within Vim
+    p           # 'paste' - paste text within Vim
+    Ctrl-v      #paste into Vim from outside clipboard (works on my MacOS)
+    :w !pbcopy  #copy content selected with the visual mode (use the mouse or press v or V) to the outside clipboard
+    
+    u           #Undo
+    Ctrl-r      #Redo
+    
+Navigation - TBC
+
+    
     
