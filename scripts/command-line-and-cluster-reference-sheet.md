@@ -27,12 +27,25 @@ Scratch - for data files and other larger files:
 
 ## General commands
     
-    cd                  #change directory
-    pwd                 #show current directory path
-    ls                  #list directory content
-    cat                 #print content of file
-    myvar='somevalue'   #variable assignment
-    date +%Y%m%d%H%M%S  #get a formatted date as YYYYMMDDHHMMSS
+    cd                    #change directory
+    pwd                   #show current directory path
+    ls                    #list directory content
+    ps aux                #list running processes - example: all, usage statistics, processes not executed from the terminal
+    cat                   #print content of file
+    myvar='somevalue'     #variable assignment
+    date +%Y%m%d%H%M%S    #get a formatted date as YYYYMMDDHHMMSS
+    wc                    #count words or lines etc. use -l for lines.
+    
+    mkdir -p foo/bar/baz  #make directory and any intermediate directories if they do not exist
+    
+## Data formatting and delimeter separated files
+https://astrobiomike.github.io/unix/six-glorious-commands
+
+Format text output in ordered columns as a table
+
+    column -t
+    cat myfile.has.columns | column -t     #example
+
 
 ## Multiple commands
 
@@ -76,14 +89,15 @@ Background execution. Add & at the end of a command to run the command in the ba
 List jobs, with info:
     
     jobs -l
-
-Bring current job to background:
     
-    Ctrl-Z
-
-Abort current job:
+Abort current (foreground) job:
     
     Ctrl-C
+
+Bring current job to background:
+
+    Ctrl-Z            #also suspends the job - let it continue using bg
+    bg [JOBNUMBER]    
 
 Bring job to foreground:
     
@@ -156,7 +170,7 @@ Last - find some really important file on the server in the background (&), do n
     nice find / -name libgit2.pc 1>paths_libgit2.txt 2>&- &
 
 
-# Modules (on Rosalind)
+## Modules (on Rosalind)
 
 List available modules
 
@@ -166,12 +180,14 @@ Add the R-module:
     
     module add apps/R/3.6.0
 
-# Scheduled jobs with the Slurm scheduler
+## Scheduled jobs with the Slurm scheduler
 When you log in to Rosalind you start off on a login node. Use other nodes for work.
 
 Start an interactive node
     
-    srun -p brc,shared --pty /bin/bash
+    srun -p brc,shared --pty /bin/bash                                          #without specifying resources
+    srun -p brc,shared --ntasks 1 --cpus-per-task 4 --mem 16G --pty /bin/bash   #specifying resources
+    srun -p brc,shared -w noded08 --pty /bin/bash   #specifying node
 
 Exit your interactive node
     
@@ -195,45 +211,50 @@ Cancel Slurm job (includes your interactive node)
     scancel [JOBID]
 
 
-# Data formatting
-
-Format text output in ordered columns as a table
-
-    column -t
-    cat myfile.has.columns | column -t     #example
-
-
-# Rosalind custom tool for monitoring disk usage
+## Rosalind custom tool for monitoring disk usage
 
 Load the module and use the tool
 
     module load utilities/rosalind-fs-quota
     ros-fs-quota
 
-# Version control and project folder structure with Git
+## Version control and project folder structure with Git
 
 For contributing to an existing GitHub project, see: https://www.dataschool.io/how-to-contribute-on-github/
 
 Common git commands
 
-    git status        #get information on the modification state of the files of the current branch
-    git branch        #manage local branches, use -v for verbose info
-    git remote        #manage remote branches, use -v for verbose info
-    git checkout      #switch branch, affecting local files, or create new branch immediately and switching to it with -b
-    git log           #view commit history, git log --graph --oneline --all for a more graphical representation (compact and showing all branches)
+    git status          #get information on the modification state of the files of the current branch
+    git branch          #manage local branches, use -v for verbose info and -r for listing remote branches
+    git remote          #manage remote branches, use -v for verbose info
+    git checkout        #switch branch, affecting local files, or create new branch immediately and switching to it with -b
+    git log             #view commit history, git log --graph --oneline --all for a more graphical representation (compact and showing all branches)
+    
+    git rebase          #rebase current branch on target branch (incorporating changes from target)
+    git merge           #merge changes from target branch on top of current
+    git fetch           #get updates from remote branch/repository
+    git pull            #fetch and integrate with remote branch/repository (either merge or rebase with --rebase)
+    git pull upstream master --rebase   #fetch latest from upstream master and rebase this branch ontop
 
-Revert local working copy changes to HEAD content
 
-    git checkout .
+Managing local working copy
+
+    git checkout .                                #Revert local working copy changes to HEAD content
+    git checkout upstream/master R/oldcode.R      #Replace local specific file with version from specified repository/branch
 
 Clone your repository from GitHub or other remote repository into current folder (will create a folder for the cloned project)
   
     git clone https://github.kcl.ac.uk/kXXXXXXXX/myprojectongithub.git
 
-Manage remote branches for push and pull, adding origin and an upstream remote branch 
+Manage repository remote branches for push and pull, adding origin and an upstream remote branch 
 
     git remote add origin URL_OF_FORK
     git remote add upstream URL_OF_PROJECT
+    
+Editing local branch default remote branch
+
+    git branch --unset-upstream                       #remove linked remote branch
+    git push origin --set-upstream mynewbranch        #push to origin and link newly created local branch to new remote branch
     
 Initiate new repository without remote in the current folder (1) or in the specified folder (2). For naming see: https://stackoverflow.com/questions/11947587/is-there-a-naming-convention-for-git-repositories
 => use lower case and hyphens rather than camel case or underscores.
@@ -245,7 +266,7 @@ Initiate new bare repository - convenient to use as a remote repository. Is conv
 
     git init --bare my-new-rlang-project.git
     
-# Vim
+## Vim
 
 Check out online summary sheets and tutorials such as https://vimsheet.com/
     
@@ -263,7 +284,70 @@ Essentials
     u           #Undo
     Ctrl-r      #Redo
     
-Navigation - TBC
-
+    v           #visual mode for marking text - use navigation to control the selection
     
+Navigation
+    
+    Ctrl-e      #scroll up
+    Command-<up>  #works on MacOS
+    Ctrl-y      #scroll down
+    Command-<down>  #works on MacOS
+    
+    H           #higher part of the screen
+    M           #middle part of the screen
+    L           #lower part of the screen
+
+    ^           #beginning of a line
+    $           #end of line
+    w           #beginning of next word
+    W
+    e           #end of next word
+    E
+    b           #back one word (beginning?)
+    B
+    }           #forward to the next paragraph
+    {           #back to the last paragraph
+    
+    42gg        #line 42
+    42G
+    :42<CR>
+    
+Search
+
+    /pattern    #search for pattern, forward
+    ?pattern    #search for pattern, backward
+    n           #repeat search, same direction
+    N           #repeat search, opposite direction
+    f [char]    #move to character, forward
+    F [char]    #move to character, backward
+    
+Diff and split
+
+    :vs otherFile       #vertical split and open other file
+    :split otherFile    #horisontal split and open other file
+    ctrl+w ctrl+w       #change cursor between diffs
+    :diffthis           #diff with this file
+    :diffoff            #turn off diff
+    ctrl+w+q            #close split windows one at a time
+    :on                 #on(ly) display the current split window
+    
+## Python (for python 3)
+
+Create a virtual environment called 'myvenv'
+
+    python3 -m venv myvenv
+    
+Activate and deactivate virtual environment
+
+    source myvenv/bin/activate
+
+    deactivate
+    
+Install requirements with pip using a requirements file 
+
+    python3 -m pip install -r requirements.txt
+    
+Produce a pip requirements file from the current installation
+
+    python3 -m pip freeze
     
