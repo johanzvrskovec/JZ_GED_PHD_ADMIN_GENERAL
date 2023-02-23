@@ -4,10 +4,18 @@ Reference sheet version 1 (20210226)
 
 Johan Zvrskovec 2021
 
+# Command line basics
+
+    ls()  #List all variables in the nevironment
+    q()   #quit
+
+
 # User packages
 
     old.packages() #lists old packages
+    
     update.packages(ask='graphics') #updates installed packages and lets you select which packages through a graphical interface (if this is available)
+    
     update.packages(ask=FALSE) #updates installed packages without prompting
     
 # File handling using read.table() and write table()
@@ -15,6 +23,18 @@ Johan Zvrskovec 2021
     pgc.mdd.full<-read.table('data/PGC_UKB_depression_genome-wide.txt', header=T)
     
     write.table(pgc.mdd.full,file = 'data/PGC_UKB_depression_genome-wide_OR.txt', sep = '\t', quote = FALSE, row.names = FALSE)
+    
+# NA, NaN and Inf values
+
+Check if not NA, NaN and Inf etc
+
+    is.finite(df$Z)
+    
+# Lists
+
+Flatten list
+
+    unlist(reallyChoppyList)
 
 # Data frames
 Create new empty data frame, using matrix
@@ -24,11 +44,16 @@ Create new empty data frame, using matrix
 Order
 
     irisOrder<-iris[order(iris$Sepal.Length),]
+    irisOrder<-iris[order(iris$Sepal.Length,iris$Sepal.Width, decreasing = c(F,T), method = "radix"),]
     
 Subset
     
     irisSub<-iris[,c(1,3,4)]
     irisSub<-iris[which(iris$Species=='setosa' | iris$Species=='versicolor'),]
+
+Superset while keeping all columns (uses data.table)
+    
+    dfSuper<-rbindlist(list(df1,df2),use.names = T, fill = T)
     
 Make factor with updated levels
 
@@ -39,14 +64,30 @@ Standardisation on dataframes
     iris$Petal.Length.std<-scale(iris$Petal.Length)
 
 Aggregate
+
+    dat[, .(count = .N, var = sum(VAR)), by = MNTH]   #data.table version
     
-    aggregate(Petal.Length ~ Species, FUN = mean, data = iris)
+    aggregate(x = testDF, by = list(testDF$by1, testDF$by2), FUN = head, 1) #get unique entries based on the chosen grouping vars and order (using parameter 1 for head)
+    
+    # column(s) for function ~ group by vars (make sure these are character!), Formulas, one ~ one, one ~ many, many ~ one, and many ~ many:
+    aggregate(column_name ~ item_code.y,merged,length) #get row count based on the chosen grouping vars and order
     
 Regex subset of text column
 
     indexesLengths<-regexec(pattern = "^\\d+:(\\w+)_\\w+_\\w+", text=text)
     matches<-regmatches(text,indexesLengths)
     rsCore<-lapply(X = matches, FUN = function(x)x[2])
+    
+Check if object exists
+
+    exists("ild")       #note the use of a string here. any use of uninitialised variables will make the code crash.
+    
+    
+# Labels (attributes)
+
+Extract all labels for all columns in a dataframe. Using unlist to flatten the list.
+
+    variableLabels<-unlist(lapply(df,function(x)attr(x,which = "label", exact = T)[[1]]))
 
 # R and relational databases (using PostgreSQL here)
 

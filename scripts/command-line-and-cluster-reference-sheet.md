@@ -1,6 +1,6 @@
 Working with the command line and computation cluster
 ============================================
-Reference sheet version 3 (20210121)
+Reference sheet version 4 (20210723)
 
 Johan Zvrskovec 2021
 
@@ -29,14 +29,25 @@ Scratch - for data files and other larger files:
     
     cd                    #change directory
     pwd                   #show current directory path
-    ls                    #list directory content
+    ls                    #list directory content - also see 'find' below
     ps aux                #list running processes - example: all, usage statistics, processes not executed from the terminal
     cat                   #print content of file
     myvar='somevalue'     #variable assignment
     date +%Y%m%d%H%M%S    #get a formatted date as YYYYMMDDHHMMSS
-    wc                    #count words or lines etc. use -l for lines.
+    wc                    #count words or lines etc. use -l for lines
+    tail -f               #print tail updates from file in real time
     
     mkdir -p foo/bar/baz  #make directory and any intermediate directories if they do not exist
+    
+Navigate to the previous diectory (go back)
+
+    cd -
+    
+Show command history
+
+    history
+    
+    history -w /dev/stdout            #print to stdout, which also excludes those pesky row numbers so you can copy multiple commands at once
     
 ## Data formatting and delimeter separated files
 https://astrobiomike.github.io/unix/six-glorious-commands
@@ -97,11 +108,11 @@ Abort current (foreground) job:
 Bring current job to background:
 
     Ctrl-Z            #also suspends the job - let it continue using bg
-    bg [JOBNUMBER]    
+    bg #[JOBNUMBER]    #use %?
 
 Bring job to foreground:
     
-    fg [JOBNUMBER]
+    fg #[JOBNUMBER]
 
 Kill job in background:
     
@@ -123,6 +134,10 @@ for (a - all, u - user, g - group, o - other).
 Set file owner of individual:group as (use -R for recursive actions). Beware of the behavior regarding symbolic links.
 
     chown postgres:postgres myfile.conf
+    
+Set group owner only (current folder . , recursively with -R)
+    
+    chgrp -R er_prj_gwas_sumstats .
 
 ## Running scripts and programs
 
@@ -142,20 +157,24 @@ Execute an R-script
 
 Copy file from local machine to remote (rosalind)
     
-    rsync -avzh --progress /Users/myname/myfile.txt login.rosalind.kcl.ac.uk:/users/kXXXXXXXX/myfile.txt
+    rsync -avzht --progress /Users/myname/myfile.txt login.rosalind.kcl.ac.uk:/users/kXXXXXXXX/myfile.txt
     
 multiple files from remote to local machine (current folder)
 
-    rsync -avzh --progress 'login.rosalind.kcl.ac.uk:/users/kXXXXXXXX/myfile.txt /users/kXXXXXXXX/myfile2.txt' ./
+    rsync -avzht --progress 'login.rosalind.kcl.ac.uk:/users/kXXXXXXXX/myfile.txt /users/kXXXXXXXX/myfile2.txt' ./
 
 the whole content of a folder (not including the folder) - remove source trailing slash to copy the whole folder
+Ref: https://serverfault.com/questions/815688/rsync-compress-level-which-compression-levels-can-be-used/1089914#1089914
 
-    rsync -avzh --progress /Users/myname/myfolder/ login.rosalind.kcl.ac.uk:/users/kXXXXXXXX/
-    
+    rsync -avzht --compress-choice=lz4 --progress /Users/myname/myfolder/ login.rosalind.kcl.ac.uk:/users/kXXXXXXXX/
+
 Downloading file over shaky connections (resumes where it left of if interrupted, makes two tries), specifying the target file (remove the last argument to keep original name)
 
     wget -c -t 2 http://remote.location/sub/libgit2-devel-0.26.6-1.el7.x86_64.rpm --no-check-certificate -O NEWFILENAME.file
-    
+
+Downloading the content of a whole folder using wget: r - recursive, E - add extensions to known file type streams, x - create the new directories, k - convert remote links to local, p - get required files, erobots=off - do not use robots.txt, np - do not recurse into parent directory
+
+    wget -r –level=0 -E –ignore-length -x -k -p -erobots=off -np -N http://www.remote.com/remote/presentation/dir
 
 ## Finding stuff
 
@@ -168,6 +187,12 @@ Find any file in real time prefixed 'setup' in any subfolder to the specified fo
 Last - find some really important file on the server in the background (&), do not show the error messages (2>&- alternate 2>/dev/null), save the (std)output to a file, do not use unnecessary resources (nice).
     
     nice find / -name libgit2.pc 1>paths_libgit2.txt 2>&- &
+
+## Computer resources
+
+List disk usage of current folder content with human readable size formats
+
+    du -h
 
 
 ## Modules (on Rosalind)
@@ -217,6 +242,13 @@ Load the module and use the tool
 
     module load utilities/rosalind-fs-quota
     ros-fs-quota
+    
+## Libraries on Rosalind
+
+List and find specific library
+
+    rpm -qa
+    rpm -qa | postgres
 
 ## Version control and project folder structure with Git
 
@@ -235,12 +267,23 @@ Common git commands
     git fetch           #get updates from remote branch/repository
     git pull            #fetch and integrate with remote branch/repository (either merge or rebase with --rebase)
     git pull upstream master --rebase   #fetch latest from upstream master and rebase this branch ontop
+    git stash           #stash uncommitted changes in local working copy
+    git stash pop       #apply top stashed changes on current local working copy, and remove stash. Use apply if you want to retain the stash.
 
+Merge and choosing only the result (ours/theirs) of one branch over the other
+
+    git merge -X ours origin    #choose the content of the current branch  -did not work when I tried it
+    git push origin master:master --force   #completely replace remote branch (master), forcefully
+https://stackoverflow.com/questions/30464995/move-remote-branch-tip-from-one-branch-to-another
 
 Managing local working copy
 
     git checkout .                                #Revert local working copy changes to HEAD content
     git checkout upstream/master R/oldcode.R      #Replace local specific file with version from specified repository/branch
+    
+Viewing remote file content
+
+    git show 656e371e7f9e979d24419acde4738656f8f0d788:scripts/cleaning/sumstats_cleaning.Rmd > scripts/cleaning/sumstats_cleaning2.Rmd
 
 Clone your repository from GitHub or other remote repository into current folder (will create a folder for the cloned project)
   
@@ -256,6 +299,10 @@ Editing local branch default remote branch
     git branch --unset-upstream                       #remove linked remote branch
     git push origin --set-upstream mynewbranch        #push to origin and link newly created local branch to new remote branch
     
+Reset credentials for remote when they have expired
+
+    git config --global --unset user.password
+    
 Initiate new repository without remote in the current folder (1) or in the specified folder (2). For naming see: https://stackoverflow.com/questions/11947587/is-there-a-naming-convention-for-git-repositories
 => use lower case and hyphens rather than camel case or underscores.
 
@@ -265,6 +312,15 @@ Initiate new repository without remote in the current folder (1) or in the speci
 Initiate new bare repository - convenient to use as a remote repository. Is conventionally appended with the suffix .git (compare with GitHub for example)
 
     git init --bare my-new-rlang-project.git
+    
+Looking at changes across commits
+
+    git diff main                 #see changes as compared to the main branch
+    git diff main --summary       #as above but only show the affected files and their changes
+    
+    git difftool main scripts/traits/HEXACO.Rmd     #use configured difftool/editor. configure your .gitconfig with [diff] tool = vimdiff, for example
+    
+    git mergetool scripts/traits/HEXACO.Rmd     #use configured mergetool/editor. configure your .gitconfig with [merge] tool = vimdiff, for example
     
 ## Vim
 
@@ -342,6 +398,15 @@ Activate and deactivate virtual environment
     source myvenv/bin/activate
 
     deactivate
+    
+Install specific module
+You can upgrade pip this way also as it is a module
+
+    python3 -m pip install SomePackage
+    
+    pip install SomePackage
+    
+    pip install --upgrade pip
     
 Install requirements with pip using a requirements file 
 
