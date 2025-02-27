@@ -1,20 +1,27 @@
 Working with the command line and computation cluster
 ============================================
-Reference sheet version 4 (20210723)
+Reference sheet version 5 (20250103)
 
-Johan Zvrskovec 2021
+Johan Zvrskovec 2025
 
-# Connect to Roslind: remote access with ssh
+# Generate secure SSH keys
+As of 2024:
+https://security.stackexchange.com/questions/143442/what-are-ssh-keygen-best-practices
+
+    ssh-keygen -t ed25519 -a 100 -f mykey.eddsa
+  
+
+# Connect to Create: remote access with ssh
 Connecting with your user (use your k-username), using a specified private keyfile (identity file) (1) or when you have set up your keys in ~/.ssh/config (2)
     
-    ssh -i ~/rosalind.rsa kXXXXXXXX@login.rosalind.kcl.ac.uk    #1
+    ssh -i ~/mykey.rsa kXXXXXXXX@hpc.create.kcl.ac.uk    #1
     
-    ssh kXXXXXXXX@login.rosalind.kcl.ac.uk                      #2
+    ssh kXXXXXXXX@hpc.create.kcl.ac.uk                   #2
 
-Rosalind support forum at: https://forum.rosalind.kcl.ac.uk/
+KCL research software and Create support forum at: https://forum.er.kcl.ac.uk/
 (because I always have trouble finding this)
 
-# File areas on Rosalind
+# File areas on Create
 Personal - for scripts, logs, and programs:
     
     /users/kXXXXXXXX
@@ -36,6 +43,7 @@ Scratch - for data files and other larger files:
     date +%Y%m%d%H%M%S    #get a formatted date as YYYYMMDDHHMMSS
     wc                    #count words or lines etc. use -l for lines
     tail -f               #print tail updates from file in real time
+    gunzip -c             #send gunzipped file content to stdout (keep original file)
     
     mkdir -p foo/bar/baz  #make directory and any intermediate directories if they do not exist
     
@@ -56,6 +64,10 @@ Format text output in ordered columns as a table
 
     column -t
     cat myfile.has.columns | column -t     #example
+
+Select rows with grep and egrep
+
+    gunzip -c combined.hm3_1kg.snplist.vanilla.jz2020.gz | egrep -i '^\w+\s23'
 
 
 ## Multiple commands
@@ -118,6 +130,20 @@ Kill job in background:
     
     kill %[JOBNUMBER]
 
+List processes:
+
+    ps
+    
+    ps | grep ssh
+    
+Kill process
+
+    kill [PROCESSNUMBER]
+    
+Kill all processes of type ssh:
+
+    pkill ssh
+
 ## Links
 
 Create symlink (soft link):
@@ -129,7 +155,8 @@ Create symlink (soft link):
 Set(+,-,=) file permissions (r - read, w - write, x - execute) recursively (-R) on specified directory
 for (a - all, u - user, g - group, o - other).
 
-    chmod -R a+rw cadir
+    chmod -R g+rw .   #current folder, group can rw - this is probably what you want in a collaborative environment, or maybe read for the group
+    chmod -R a+rw .   #current folder, everyome can rw
     
 Set file owner of individual:group as (use -R for recursive actions). Beware of the behavior regarding symbolic links.
 
@@ -155,18 +182,24 @@ Execute an R-script
     
 ## Transferring files between machines, and downloading from remote locations
 
-Copy file from local machine to remote (rosalind)
+Copy large sets of files locally, the whole folder
+
+    rsync -avhtp --progress /loc1/myfolderSource /loc2/
+    rsync -avhtp --progress /loc1/myfolderSource /loc2/myfolderDestination
+    rsync -avhtpu --progress /loc1/myfolderSource /loc2/myfolderDestination       #update based on timestamp
+
+Copy file from local machine to remote (Create)
     
-    rsync -avzht --progress /Users/myname/myfile.txt login.rosalind.kcl.ac.uk:/users/kXXXXXXXX/myfile.txt
+    rsync -avzht --progress /Users/myname/myfile.txt hpc.create.kcl.ac.uk:/users/kXXXXXXXX/myfile.txt
     
 multiple files from remote to local machine (current folder)
 
-    rsync -avzht --progress 'login.rosalind.kcl.ac.uk:/users/kXXXXXXXX/myfile.txt /users/kXXXXXXXX/myfile2.txt' ./
+    rsync -avzht --progress 'hpc.create.kcl.ac.uk:/users/kXXXXXXXX/myfile.txt /users/kXXXXXXXX/myfile2.txt' ./
 
 the whole content of a folder (not including the folder) - remove source trailing slash to copy the whole folder
 Ref: https://serverfault.com/questions/815688/rsync-compress-level-which-compression-levels-can-be-used/1089914#1089914
 
-    rsync -avzht --compress-choice=lz4 --progress /Users/myname/myfolder/ login.rosalind.kcl.ac.uk:/users/kXXXXXXXX/
+    rsync -avzht --compress-choice=lz4 --progress /Users/myname/myfolder/ hpc.create.kcl.ac.uk:/users/kXXXXXXXX/
 
 Downloading file over shaky connections (resumes where it left of if interrupted, makes two tries), specifying the target file (remove the last argument to keep original name)
 
@@ -187,19 +220,51 @@ Find any file in real time prefixed 'setup' in any subfolder to the specified fo
 Last - find some really important file on the server in the background (&), do not show the error messages (2>&- alternate 2>/dev/null), save the (std)output to a file, do not use unnecessary resources (nice).
     
     nice find / -name libgit2.pc 1>paths_libgit2.txt 2>&- &
+    
+## Multitasking with tmux
+
+https://hamvocke.com/blog/a-quick-and-easy-guide-to-tmux/
+https://hamvocke.com/blog/a-guide-to-customizing-your-tmux-conf/
+
+List commands
+
+    Ctrl-b [release] ?
+
+Split screen
+
+    Ctrl-b [release] %                        #split horizontally (vertical line)
+    Ctrl-b [release] "                        #split vertically (horizontal line)
+    Ctrl-b [release] [arrow]                  #navigate split panes
+    exit                                      #close
+    Ctrl-d                                    #close
+    Ctrl-b [release] z                        #toggle pane full screen
+    Ctrl-b [release] Ctrl<arrow key>          #resize pane in direction
+    
+    
+Sessions
+
+    tmux ls                               #list
+    Ctrl-b [relese] d                     #detach
+    tmux attach -t 0                      #attach
+    tmux new -s database                  #new named session
+    tmux rename-session -t 0 database     #rename session
+
+# HPC related
 
 ## Computer resources
 
-List disk usage of current folder content with human readable size formats
+List disk usage of current folder (one sublevel) content with human readable size formats
 
-    du -h
+    du -h -d 1
 
 
-## Modules (on Rosalind)
+## Modules (on Create)
 
 List available modules
 
     module avail
+    module spider
+    module keyword harfbuzz dev
 
 Add the R-module:
     
@@ -208,11 +273,12 @@ Add the R-module:
 ## Scheduled jobs with the Slurm scheduler
 When you log in to Rosalind you start off on a login node. Use other nodes for work.
 
-Start an interactive node
+Start an interactive node.
+If multiple partitions possible, separate these with a comma.
     
-    srun -p brc,shared --pty /bin/bash                                          #without specifying resources
-    srun -p brc,shared --ntasks 1 --cpus-per-task 4 --mem 16G --pty /bin/bash   #specifying resources
-    srun -p brc,shared -w noded08 --pty /bin/bash   #specifying node
+    srun -p cpu --pty /bin/bash                                          #without specifying resources
+    srun -p cpu --ntasks 1 --cpus-per-task 4 --mem 16G --pty /bin/bash   #specifying resources
+    srun -p cpu -w noded08 --pty /bin/bash   #specifying node
 
 Exit your interactive node
     
@@ -221,13 +287,13 @@ Exit your interactive node
 Submit a command to the Slurm job scheduler
 Example - Uses whichever of the brc partition (more resources than the shared) and the shared, settings for a number of tasks, cpu's, memory, and job outpt files, and names output with the current date:
     
-    sbatch --time 00:59:00 --partition brc,shared --job-name="MY_JOB" --ntasks 1 --cpus-per-task 4 --mem-per-cpu 6G --wrap="module add apps/R/3.6.0 && Rscript myprojectCode.R" --output "myprojectCode$(date +%Y%m%d).out.txt" --error "myprojectCode$(date +%Y%m%d).err.txt"
+    sbatch --time 00:59:00 --partition cpu --job-name="MY_JOB" --ntasks 1 --cpus-per-task 4 --mem-per-cpu 6G --wrap="module add apps/R/3.6.0 && Rscript myprojectCode.R" --output "myprojectCode$(date +%Y%m%d).out.txt" --error "myprojectCode$(date +%Y%m%d).err.txt"
 
-List all Slurm jobs on Rosalind
+List all Slurm jobs on the HPC
     
     squeue
 
-List user's Slurm job on Rosalind
+List user's Slurm job on the HPC
     
     squeue -u kXXXXXXXX
 
@@ -236,21 +302,21 @@ Cancel Slurm job (includes your interactive node)
     scancel [JOBID]
 
 
-## Rosalind custom tool for monitoring disk usage
+## Create HPC custom tool for monitoring disk usage
 
 Load the module and use the tool
 
     module load utilities/rosalind-fs-quota
     ros-fs-quota
     
-## Libraries on Rosalind
+## Libraries on the HPC
 
 List and find specific library
 
     rpm -qa
     rpm -qa | postgres
 
-## Version control and project folder structure with Git
+# Version control and project folder structure with Git
 
 For contributing to an existing GitHub project, see: https://www.dataschool.io/how-to-contribute-on-github/
 
@@ -269,6 +335,16 @@ Common git commands
     git pull upstream master --rebase   #fetch latest from upstream master and rebase this branch ontop
     git stash           #stash uncommitted changes in local working copy
     git stash pop       #apply top stashed changes on current local working copy, and remove stash. Use apply if you want to retain the stash.
+    
+Remove/move files/folders, tracked
+
+    git rm -r scripts/archive
+    
+    git mv scripts/archive scripts/archive2
+
+Remove files, tracked from index without deleting theme (--cached)
+
+    git rm -r --cached scripts/archive
 
 Merge and choosing only the result (ours/theirs) of one branch over the other
 
@@ -291,6 +367,7 @@ Clone your repository from GitHub or other remote repository into current folder
 
 Manage repository remote branches for push and pull, adding origin and an upstream remote branch 
 
+    git remote remove origin
     git remote add origin URL_OF_FORK
     git remote add upstream URL_OF_PROJECT
     
@@ -322,7 +399,7 @@ Looking at changes across commits
     
     git mergetool scripts/traits/HEXACO.Rmd     #use configured mergetool/editor. configure your .gitconfig with [merge] tool = vimdiff, for example
     
-## Vim
+# Vim
 
 Check out online summary sheets and tutorials such as https://vimsheet.com/
     
@@ -387,11 +464,12 @@ Diff and split
     ctrl+w+q            #close split windows one at a time
     :on                 #on(ly) display the current split window
     
-## Python (for python 3)
+# Python (for python 3)
 
 Create a virtual environment called 'myvenv'
 
     python3 -m venv myvenv
+    virtualenv --python=python2.7 myenv #if you need a python2.7 environment
     
 Activate and deactivate virtual environment
 
@@ -399,12 +477,20 @@ Activate and deactivate virtual environment
 
     deactivate
     
+List packages/modules (outdated)
+
+    pip list --outdated
+    
 Install specific module
 You can upgrade pip this way also as it is a module
 
     python3 -m pip install SomePackage
     
     pip install SomePackage
+    
+    pip install bitarray --force-reinstall #upgrade even if package exists
+    
+    pip install 'bitarray>=0.8,<0.9' --force-reinstall #possibly downgrade
     
     pip install --upgrade pip
     

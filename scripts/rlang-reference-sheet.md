@@ -30,6 +30,12 @@ Check if not NA, NaN and Inf etc
 
     is.finite(df$Z)
     
+#Date and time
+
+    nPOSIXct<-as.POSIXct(nUnixEpoch, origin = "1970-01-01")     #parse date from UNIX epoch (seconds?)
+    nPOSIXct<-strptime("13/08/1999",format='%d/%m/%Y')          #parse date from string
+    mockData$dob<-strftime(nPOSIXct,format='%d/%m/%Y')          #convert POSIXct to any format
+    
 # Lists
 
 Flatten list
@@ -81,13 +87,60 @@ Regex subset of text column
 Check if object exists
 
     exists("ild")       #note the use of a string here. any use of uninitialised variables will make the code crash.
-    
+
+# Overview of data
+Using dplyr. Generates a frequency table (sums/counts) using tally().
+```
+    dat %>%
+      group_by(
+        depression.ever.case,
+        `29033-0.0`,
+        BD1,
+        depression.single
+      ) %>%
+      tally()
+      
+      #alternative, without dplyr syntax
+      dplyr::tally(
+        dplyr::group_by(
+        cdat,dem.sex_numeric,
+        dem.do_you_identify_as_transgender_numeric,
+        dem.what_is_your_sexual_orientation_numeric
+        )
+      )
+```
     
 # Labels (attributes)
 
 Extract all labels for all columns in a dataframe. Using unlist to flatten the list.
 
     variableLabels<-unlist(lapply(df,function(x)attr(x,which = "label", exact = T)[[1]]))
+    
+# Joins
+
+## Update by reference (data.table)
+
+    ref[ldscores, on=c(CHR='CHR' , BP='BP'), c('L2','M') := list(i.L2,i.M)]
+    
+## Safe merge
+
+This is appropriate when there are multiple variables to join that you don't want to name. Any row duplicates over the ID variable will result in rows multiplying and the end row count being larger than the number of unique ID's.
+
+```R
+    merged_data <- data.table(ID=unique(c(dat.pid5[,ID],dat.pid5bf[,ID], dat.cidid[,ID], dat.cidia[,ID], dat.hexaco[,ID])))
+    
+    setkeyv(merged_data,cols = "ID")
+    dim(merged_data)
+
+    merged_data<-merge(x = merged_data, y = dat.pid5, by = "ID", all = T)
+    merged_data<-merge(x = merged_data, y = dat.pid5bf, by = "ID", all = T)
+    merged_data<-merge(x = merged_data, y = dat.cidid, by = "ID", all = T)
+    merged_data<-merge(x = merged_data, y = dat.cidia, by = "ID", all = T)
+    merged_data<-merge(x = merged_data, y = dat.saspd, by = "ID", all = T)
+    merged_data<-merge(x = merged_data, y = dat.hexaco, by = "ID", all = T)
+    
+    dim(merged_data)
+```
 
 # R and relational databases (using PostgreSQL here)
 
