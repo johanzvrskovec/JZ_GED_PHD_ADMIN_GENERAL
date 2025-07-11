@@ -43,7 +43,8 @@ Scratch - for data files and other larger files:
     date +%Y%m%d%H%M%S    #get a formatted date as YYYYMMDDHHMMSS
     wc                    #count words or lines etc. use -l for lines
     tail -f               #print tail updates from file in real time
-    gunzip -c             #send gunzipped file content to stdout (keep original file)
+    gunzip -c file.gz     #send gunzipped file content to stdout (keep original file)
+    tar -xf file.tar      #extract tar-file
     
     mkdir -p foo/bar/baz  #make directory and any intermediate directories if they do not exist
     
@@ -182,7 +183,7 @@ Execute an R-script
     
 ## Transferring files between machines, and downloading from remote locations
 
-Copy large sets of files locally, the whole folder
+Copy large sets of files locally, the whole folder. Remove -a (archive, includes recursion) for manually setting these. 
 
     rsync -avhtp --progress /loc1/myfolderSource /loc2/
     rsync -avhtp --progress /loc1/myfolderSource /loc2/myfolderDestination
@@ -220,6 +221,13 @@ Find any file in real time prefixed 'setup' in any subfolder to the specified fo
 Last - find some really important file on the server in the background (&), do not show the error messages (2>&- alternate 2>/dev/null), save the (std)output to a file, do not use unnecessary resources (nice).
     
     nice find / -name libgit2.pc 1>paths_libgit2.txt 2>&- &
+    
+## Check file cosistency
+
+You can use openssl to check file consistency through a generated file hash.
+
+    openssl dgst myfolder/myfile.f #SHA256(myfolder/myfile.f)= d9c0940504600a802045fe6409d1bcf5bb8b339184019cac27463222306f313b
+    openssl dgst --md5 myfolder/myfile.f #MD5(myfolder/myfile.f)= a752ec61eed5ffd8ba88e339df34da59
     
 ## Multitasking with tmux
 
